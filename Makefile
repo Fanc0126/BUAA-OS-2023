@@ -20,7 +20,7 @@ case_div: casegen.c
 	gcc -o casegen casegen.c
 	./casegen div 100 > case_div
 
-case_all: calc.c
+case_all: calc.c case_add case_sub case_mul case_div
 	cat case_add >  case_all
 	cat case_sub >> case_all
 	cat case_mul >> case_all
