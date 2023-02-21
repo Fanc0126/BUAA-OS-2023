@@ -26,6 +26,5 @@ case_all: calc.c case_add case_sub case_mul case_div
 	cat case_mul >> case_all
 	cat case_div >> case_all
 	gcc -o calc calc.c
-
 clean:
 	rm -f out calc casegen case_*
