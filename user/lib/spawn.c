@@ -117,8 +117,8 @@ int spawn(char *prog, char **argv) {
 	u_char elfbuf[512];
 	/* Exercise 6.4: Your code here. (1/6) */
 	if((r=readn(fd,elfbuf,512))!=512){
-		if(r>=0)
-			r = -E_NOT_EXEC;
+	//	if(r>=0)
+	//		r = -E_NOT_EXEC;
 		goto err;
 	}
 	const Elf32_Ehdr *ehdr = elf_from(elfbuf, sizeof(Elf32_Ehdr));
