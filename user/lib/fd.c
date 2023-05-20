@@ -149,12 +149,11 @@ int dup(int oldfdnum, int newfdnum) {
 	return newfdnum;
 
 err:
-	syscall_mem_unmap(0, newfd);
 
 	for (i = 0; i < PDMAP; i += BY2PG) {
 		syscall_mem_unmap(0, (void *)(nva + i));
 	}
-
+	syscall_mem_unmap(0, newfd);
 	return r;
 }
 

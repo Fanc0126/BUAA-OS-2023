@@ -15,12 +15,12 @@ void mips_init() {
 	printk("init.c:\tmips_init() is called\n");
 
 	// lab2:
-	// mips_detect_memory();
-	// mips_vm_init();
-	// page_init();
+	 mips_detect_memory();
+	 mips_vm_init();
+	 page_init();
 
 	// lab3:
-	// env_init();
+	 env_init();
 
 	// lab3:
 	// ENV_CREATE_PRIORITY(user_bare_loop, 1);
@@ -36,12 +36,12 @@ void mips_init() {
 
 	// lab5:
 	// ENV_CREATE(user_fstest);
-	// ENV_CREATE(fs_serv);  // This must be the second env!
+	 ENV_CREATE(fs_serv);  // This must be the second env!
 	// ENV_CREATE(user_devtst);
-
+	ENV_CREATE(user_testpipe);
 	// lab3:
-	// kclock_init();
-	// enable_irq();
+	 kclock_init();
+	 enable_irq();
 	while (1) {
 	}
 }
