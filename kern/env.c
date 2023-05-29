@@ -511,7 +511,7 @@ void do_signal(){
 			flag=1;
 		}
 		if(flag!=0){
-		//	TAILQ_REMOVE(&(curenv->sig_list),info,info_link);
+//			TAILQ_REMOVE(&(curenv->sig_list),info,info_link);
 		memcpy(&(curenv->blocked),&(curenv->action[signum-1].sa_mask),sizeof(sigset_t));
 			handle_signal(signum);			
 			break;
@@ -557,7 +557,7 @@ void env_run(struct Env *e) {
 	 */
 	/* Exercise 3.8: Your code here. (2/2) */
 	//if(!TAILQ_EMPTY(&(curenv->sig_list)))
-		do_signal();
+	do_signal();
 	env_pop_tf(&(curenv->env_tf),curenv->env_asid);
 }
 

@@ -363,7 +363,7 @@ int sys_set_trapframe(u_int envid, struct Trapframe *tf) {
 }
 void sys_do_signal(struct Trapframe *tf){
 	sys_set_trapframe(curenv->env_id,tf);
-	do_signal();
+//	do_signal();
 }
 /* Overview:
  * 	Kernel panic with message `msg`.
