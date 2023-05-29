@@ -65,6 +65,9 @@ int syscall_set_trapframe(u_int envid, struct Trapframe *tf);
 void syscall_panic(const char *msg) __attribute__((noreturn));
 int syscall_ipc_try_send(u_int envid, u_int value, const void *srcva, u_int perm);
 int syscall_ipc_recv(void *dstva);
+int syscall_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+int syscall_sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+int syscall_kill(u_int envid, int sig);
 int syscall_cgetc();
 int syscall_write_dev(void *, u_int, u_int);
 int syscall_read_dev(void *, u_int, u_int);
@@ -72,7 +75,14 @@ int syscall_read_dev(void *, u_int, u_int);
 // ipc.c
 void ipc_send(u_int whom, u_int val, const void *srcva, u_int perm);
 u_int ipc_recv(u_int *whom, void *dstva, u_int *perm);
-
+int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+void sigemptyset(sigset_t *set);
+void sigfillset(sigset_t *set);
+void sigaddset(sigset_t *set, int signum);
+void sigdelset(sigset_t *set, int signum);
+int sigismember(const sigset_t *set, int signum);
+int kill(u_int envid, int sig);
 // wait.c
 void wait(u_int envid);
 

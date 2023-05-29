@@ -60,7 +60,15 @@ int syscall_ipc_try_send(u_int envid, u_int value, const void *srcva, u_int perm
 int syscall_ipc_recv(void *dstva) {
 	return msyscall(SYS_ipc_recv, dstva);
 }
-
+int syscall_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact){
+	return msyscall(SYS_sigaction,signum,act,oldact);
+}
+int syscall_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
+	return msyscall(SYS_sigprocmask,how,set,oldset);
+}
+int syscall_kill(u_int envid, int sig){
+	return msyscall(SYS_kill,envid,sig);
+}
 int syscall_cgetc() {
 	return msyscall(SYS_cgetc);
 }

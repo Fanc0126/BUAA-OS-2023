@@ -7,6 +7,52 @@
 #include <syscall.h>
 
 extern struct Env *curenv;
+int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact){
+	if(signum<1||signum>64)
+		return -1;
+	if(oldact != NULL)
+		*oldact=curenv->action[signum-1];
+	memcpy(curenv->action+(signum-1),act,sizeof(*act));
+	//curenv->action[signum-1]=*act;
+	return 0;
+}
+
+int sys_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
+	if(oldset!=NULL)
+		*oldset=curenv->blocked;
+	int sig0=0;
+	int sig1=0;
+	if(how==0){
+		sig0=curenv->blocked.sig[0]|set->sig[0];
+		sig1=curenv->blocked.sig[1]|set->sig[1];
+	}else if(how==1){
+		sig0=curenv->blocked.sig[0]&(~(set->sig[0]));
+		sig1=curenv->blocked.sig[1]&(~(set->sig[1]));
+	}else if(how==2){
+		sig0=set->sig[0];
+		sig1=set->sig[1];
+	}else{
+		return -1;
+	}
+	curenv->blocked.sig[0]=sig0;
+	curenv->blocked.sig[1]=sig1;
+	return 0;
+}
+
+int sys_kill(u_int envid, int sig){
+	if(sig<1||sig>64)
+		return -1;
+	struct Env *env;
+	if(envid==0)
+		env=curenv;
+	else
+		try(envid2env(envid,&env,0));
+	struct siginfo info;
+	info.signum=sig;
+	info.sender=curenv->env_id;
+	TAILQ_INSERT_TAIL(&(env->sig_list),&info,info_link);
+	return 0;
+}
 
 /* Overview:
  * 	This function is used to print a character on screen.
@@ -315,7 +361,10 @@ int sys_set_trapframe(u_int envid, struct Trapframe *tf) {
 		return 0;
 	}
 }
-
+void sys_do_signal(struct Trapframe *tf){
+	sys_set_trapframe(curenv->env_id,tf);
+	do_signal();
+}
 /* Overview:
  * 	Kernel panic with message `msg`.
  *
@@ -496,6 +545,7 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 }
 
 void *syscall_table[MAX_SYSNO] = {
+    [SYS_do_signal]=sys_do_signal,
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
     [SYS_getenvid] = sys_getenvid,
@@ -511,6 +561,9 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_panic] = sys_panic,
     [SYS_ipc_try_send] = sys_ipc_try_send,
     [SYS_ipc_recv] = sys_ipc_recv,
+    [SYS_sigaction]=sys_sigaction,
+    [SYS_sigprocmask]=sys_sigprocmask,
+    [SYS_kill]=sys_kill,
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,

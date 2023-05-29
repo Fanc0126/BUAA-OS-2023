@@ -37,3 +37,39 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 
 	return env->env_ipc_value;
 }
+int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact){
+	return syscall_sigaction(signum,act,oldact);
+}
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
+	return syscall_sigprocmask(how,set,oldset);
+}
+void sigemptyset(sigset_t *set){
+	memset(set->sig,0,sizeof(set->sig));
+}
+void sigfillset(sigset_t *set){
+	memset(set->sig,255,sizeof(set->sig));
+}
+void sigaddset(sigset_t *set, int signum){
+	if(signum>32){
+		set->sig[1]=set->sig[1]|(1<<(signum%32-1));
+	}else{
+		set->sig[0]=set->sig[0]|(1<<(signum-1));
+	}
+}
+void sigdelset(sigset_t *set, int signum){
+	if(signum>32){
+		set->sig[1]=set->sig[1]&(~(1<<(signum%32-1)));
+	}else{
+		set->sig[0]=set->sig[0]&(~(1<<(signum-1)));
+	}
+}
+int sigismember(const sigset_t *set, int signum){
+	if(signum>32){
+		return (set->sig[1]&(1<<(signum%32-1)))==0?0:1;
+	}else{
+		return (set->sig[0]&(1<<(signum-1)))==0?0:1;
+	}
+}
+int kill(u_int envid, int sig){
+	return syscall_kill(envid,sig);
+}

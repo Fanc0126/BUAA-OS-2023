@@ -276,7 +276,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_tf.cp0_status = STATUS_IM4 | STATUS_KUp | STATUS_IEp;
 	// Keep space for 'argc' and 'argv'.
 	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
-
+	TAILQ_INIT(&(e->sig_list));
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */
 	LIST_REMOVE(e,env_link);
@@ -460,7 +460,64 @@ static inline void pre_env_run(struct Env *e) {
 }
 
 extern void env_pop_tf(struct Trapframe *tf, u_int asid) __attribute__((noreturn));
+void handle_signal(int signum){
+	if(curenv->action[signum-1].sa_handler){
+		struct Trapframe tmp_tf;
+		tmp_tf=curenv->env_tf;
+		//memset(&tmp_tf,&(e->env_tf),sizeof(struct Trapframe));
+		if (curenv->env_tf.regs[29] < USTACKTOP || curenv->env_tf.regs[29] >= UXSTACKTOP) {
+			curenv->env_tf.regs[29] = UXSTACKTOP;
+		}
+		curenv->env_tf.regs[29]-=sizeof(struct Trapframe);
+		*(struct Trapframe *)curenv->env_tf.regs[29] = tmp_tf;
+		unsigned long dest=curenv->env_tf.regs[29];
+		curenv->env_tf.regs[29]-=4;
+		*(unsigned long *)curenv->env_tf.regs[29]=0xc;
+		curenv->env_tf.regs[29]-=4;
+		*(unsigned long *)curenv->env_tf.regs[29]=0x34250000|(dest&0xffff);
+		curenv->env_tf.regs[29]-=4;
+		*(unsigned long *)curenv->env_tf.regs[29]=0x3c010000|(dest>>16);
+		curenv->env_tf.regs[29]-=4;
+		*(unsigned long *)curenv->env_tf.regs[29]=0x24040000;
 
+		curenv->env_tf.regs[31]= curenv->env_tf.regs[29];
+		curenv->env_tf.regs[4]=signum;
+		curenv->env_tf.regs[29]-=sizeof(curenv->env_tf.regs[4]);
+		
+	//	curenv->env_tf.regs[2]=SYS_sigreturn;
+		curenv->env_tf.cp0_epc=curenv->action[signum-1].sa_handler;
+	}else{
+		if(signum==9||signum==11||signum==15){
+			env_destroy(curenv);
+			//schedule(1);
+		}
+		return ;
+	}
+}
+void do_signal(){
+	if(TAILQ_EMPTY(&(curenv->sig_list)))
+		return ;
+	int signum=-1;
+	int flag=0;
+	struct siginfo *info=NULL;
+	TAILQ_FOREACH(info,&(curenv->sig_list),info_link){
+		signum=info->signum;
+		if(signum>32){
+			flag=curenv->blocked.sig[1]&(1<<(signum%32-1));	
+		}else{
+			flag=curenv->blocked.sig[0]&(1<<(signum-1));
+		}
+		if(signum==9){
+			flag=1;
+		}
+		if(flag!=0){
+		//	TAILQ_REMOVE(&(curenv->sig_list),info,info_link);
+		memcpy(&(curenv->blocked),&(curenv->action[signum-1].sa_mask),sizeof(sigset_t));
+			handle_signal(signum);			
+			break;
+		}
+	}
+}
 /* Overview:
  *   Switch CPU context to the specified env 'e'.
  *
@@ -499,6 +556,8 @@ void env_run(struct Env *e) {
 	 *    returning to the kernel caller, making 'env_run' a 'noreturn' function as well.
 	 */
 	/* Exercise 3.8: Your code here. (2/2) */
+	//if(!TAILQ_EMPTY(&(curenv->sig_list)))
+		do_signal();
 	env_pop_tf(&(curenv->env_tf),curenv->env_asid);
 }
 

@@ -14,6 +14,22 @@
 #define ENV_FREE 0
 #define ENV_RUNNABLE 1
 #define ENV_NOT_RUNNABLE 2
+typedef struct{
+	int sig[2]; 
+} sigset_t;
+
+struct sigaction{
+	void (*sa_handler)(int);
+	sigset_t sa_mask;
+};
+
+struct siginfo{
+	u_int signum;
+	u_int sender;
+	TAILQ_ENTRY(siginfo) info_link;
+};
+
+TAILQ_HEAD(Sig_list,siginfo);
 
 struct Env {
 	struct Trapframe env_tf;  // Saved registers
@@ -37,6 +53,13 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs; // number of times been env_run'ed
+	// challenge 4
+	struct sigaction action[64];
+	sigset_t blocked;
+	//pending
+	struct Sig_list sig_list;
+	sigset_t signal;//?no ues?
+	u_int sigpending;
 };
 
 LIST_HEAD(Env_list, Env);
@@ -49,7 +72,8 @@ int env_alloc(struct Env **e, u_int parent_id);
 void env_free(struct Env *);
 struct Env *env_create(const void *binary, size_t size, int priority);
 void env_destroy(struct Env *e);
-
+void handle_signal(int signum);
+void do_signal();
 int envid2env(u_int envid, struct Env **penv, int checkperm);
 void env_run(struct Env *e) __attribute__((noreturn));
 void enable_irq(void);

@@ -4,6 +4,7 @@
 #ifndef __ASSEMBLER__
 
 enum {
+	SYS_do_signal,
 	SYS_putchar,
 	SYS_print_cons,
 	SYS_getenvid,
@@ -19,6 +20,9 @@ enum {
 	SYS_panic,
 	SYS_ipc_try_send,
 	SYS_ipc_recv,
+	SYS_sigaction,
+	SYS_sigprocmask,
+	SYS_kill,
 	SYS_cgetc,
 	SYS_write_dev,
 	SYS_read_dev,
