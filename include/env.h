@@ -57,7 +57,9 @@ struct Env {
 	struct sigaction action[64];
 	sigset_t blocked;
 	//pending
-	struct Sig_list sig_list;
+	u_int sig_list[128];
+	u_int num;
+//	struct Sig_list sig_list;
 	sigset_t signal;//?no ues?
 	u_int sigpending;
 };

@@ -276,7 +276,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_tf.cp0_status = STATUS_IM4 | STATUS_KUp | STATUS_IEp;
 	// Keep space for 'argc' and 'argv'.
 	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
-	TAILQ_INIT(&(e->sig_list));
+//	TAILQ_INIT(&(e->sig_list));
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */
 	LIST_REMOVE(e,env_link);
@@ -461,6 +461,7 @@ static inline void pre_env_run(struct Env *e) {
 
 extern void env_pop_tf(struct Trapframe *tf, u_int asid) __attribute__((noreturn));
 void handle_signal(int signum){
+//	printk("nice!\n");
 	if(curenv->action[signum-1].sa_handler){
 		struct Trapframe tmp_tf;
 		tmp_tf=curenv->env_tf;
@@ -486,6 +487,7 @@ void handle_signal(int signum){
 		
 	//	curenv->env_tf.regs[2]=SYS_sigreturn;
 		curenv->env_tf.cp0_epc=curenv->action[signum-1].sa_handler;
+		env_pop_tf(&(curenv->env_tf),curenv->env_asid);
 	}else{
 		if(signum==9||signum==11||signum==15){
 			env_destroy(curenv);
@@ -495,26 +497,32 @@ void handle_signal(int signum){
 	}
 }
 void do_signal(){
-	if(TAILQ_EMPTY(&(curenv->sig_list)))
+	if(curenv->num==0)
 		return ;
 	int signum=-1;
-	int flag=0;
-	struct siginfo *info=NULL;
-	TAILQ_FOREACH(info,&(curenv->sig_list),info_link){
-		signum=info->signum;
+	int flag=1;
+	int i=0;
+	for(i=0;i<curenv->num;i++){
+		signum=curenv->sig_list[i];
 		if(signum>32){
 			flag=curenv->blocked.sig[1]&(1<<(signum%32-1));	
 		}else{
 			flag=curenv->blocked.sig[0]&(1<<(signum-1));
 		}
 		if(signum==9){
-			flag=1;
+			flag=0;
 		}
-		if(flag!=0){
-//			TAILQ_REMOVE(&(curenv->sig_list),info,info_link);
+//		printk("signum:%d  flag:%d block: %d\n",signum,flag,curenv->blocked.sig[0]);
+		if(flag==0){
+		//	TAILQ_REMOVE(&(curenv->sig_list),info,info_link);
+		int j;
+		for(j=i+1;j<curenv->num;j++){
+			curenv->sig_list[i]=curenv->sig_list[j];
+		}
+		curenv->num=curenv->num-1;
 		memcpy(&(curenv->blocked),&(curenv->action[signum-1].sa_mask),sizeof(sigset_t));
 			handle_signal(signum);			
-			break;
+			return ;
 		}
 	}
 }

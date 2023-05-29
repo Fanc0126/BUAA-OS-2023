@@ -14,6 +14,7 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
 		*oldact=curenv->action[signum-1];
 	memcpy(curenv->action+(signum-1),act,sizeof(*act));
 	//curenv->action[signum-1]=*act;
+	do_signal();
 	return 0;
 }
 
@@ -36,6 +37,7 @@ int sys_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
 	}
 	curenv->blocked.sig[0]=sig0;
 	curenv->blocked.sig[1]=sig1;
+	do_signal();
 	return 0;
 }
 
@@ -47,10 +49,13 @@ int sys_kill(u_int envid, int sig){
 		env=curenv;
 	else
 		try(envid2env(envid,&env,0));
-	struct siginfo info;
-	info.signum=sig;
-	info.sender=curenv->env_id;
-	TAILQ_INSERT_TAIL(&(env->sig_list),&info,info_link);
+//	struct siginfo info;
+//	info.signum=sig;
+//	info.sender=curenv->env_id;
+//	TAILQ_INSERT_TAIL(&(env->sig_list),&info,info_link);
+	env->sig_list[env->num]=sig;
+	env->num++;
+	do_signal();
 	return 0;
 }
 
@@ -296,6 +301,8 @@ int sys_exofork(void) {
 	/* Exercise 4.9: Your code here. (4/4) */
 	e->env_status=ENV_NOT_RUNNABLE;
 	e->env_pri=curenv->env_pri;
+	memcpy(&(e->action),&(curenv->action),sizeof(curenv->action));
+	memcpy(&(e->blocked),&(curenv->blocked),sizeof(curenv->blocked));
 	return e->env_id;
 }
 
@@ -363,7 +370,7 @@ int sys_set_trapframe(u_int envid, struct Trapframe *tf) {
 }
 void sys_do_signal(struct Trapframe *tf){
 	sys_set_trapframe(curenv->env_id,tf);
-//	do_signal();
+	do_signal();
 }
 /* Overview:
  * 	Kernel panic with message `msg`.
