@@ -381,7 +381,6 @@ void sys_do_signal(struct Trapframe *tf){
 	curenv->block_num--;
 	memcpy(&(curenv->blocked),&(curenv->oldBlock[curenv->block_num]),sizeof(sigset_t));
 	do_signal();
-//	printk("now:%x\n",curenv->env_tf.cp0_epc);
 }
 /* Overview:
  * 	Kernel panic with message `msg`.

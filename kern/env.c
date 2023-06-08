@@ -464,8 +464,11 @@ void handle_signal(int signum){
 //	printk("nice!\n");
 	if(curenv->action[signum-1].sa_handler){
 		struct Trapframe tmp_tf;
+//		if(signum==11){
+//			((struct Trapframe *)KSTACKTOP - 1)->cp0_epc+=4;
+//		}
 		tmp_tf=*((struct Trapframe *)KSTACKTOP - 1);
-//		printk("old:%x\n",curenv->env_tf.cp0_epc);
+//		printk("old:%x\n",tmp_tf.cp0_epc);
 		//memset(&tmp_tf,&(e->env_tf),sizeof(struct Trapframe));
 		if (curenv->env_tf.regs[29] < USTACKTOP || curenv->env_tf.regs[29] >= UXSTACKTOP) {
 			curenv->env_tf.regs[29] = UXSTACKTOP;
@@ -481,7 +484,7 @@ void handle_signal(int signum){
 		*(unsigned long *)curenv->env_tf.regs[29]=0x3c010000|(dest>>16);
 		curenv->env_tf.regs[29]-=4;
 		*(unsigned long *)curenv->env_tf.regs[29]=0x24040000;
-
+//		printk("return:%x\n",curenv->env_tf.regs[29]);
 		curenv->env_tf.regs[31]= curenv->env_tf.regs[29];
 		curenv->env_tf.regs[4]=signum;
 		curenv->env_tf.regs[29]-=sizeof(curenv->env_tf.regs[4]);
@@ -505,7 +508,7 @@ void do_signal(){
 	int signum=-1;
 	int flag=1;
 	int i=0;
-	for(i=0;i<curenv->num;i++){
+	for(i=curenv->num-1;i>=0;i--){
 		signum=curenv->sig_list[i];
 		if(signum>32){
 			flag=curenv->blocked.sig[1]&(1<<(signum%32-1));	
