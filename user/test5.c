@@ -1,12 +1,11 @@
 #include <lib.h>
-
-int global = 0;
+int global=0;
 void handler(int num) {
-    debugf("Reach handler, now the signum is %d!\n", num);
-    global = 1;
+    debugf("test the Non-blocking signal\n");
+    global++;
 }
 
-#define TEST_NUM 2
+#define TEST_NUM 9
 int main(int argc, char **argv) {
     sigset_t set;
     sigemptyset(&set);
@@ -16,13 +15,16 @@ int main(int argc, char **argv) {
     panic_on(sigaction(TEST_NUM, &sig, NULL));
     sigaddset(&set, TEST_NUM);
     panic_on(sigprocmask(0, &set, NULL));
+    debugf("Signal blocked\n");
     kill(0, TEST_NUM);
+//    debugf("Signal blocked\n");
     int ans = 0;
-    //debugf("test1\n");
     for (int i = 0; i < 10000000; i++) {
         ans += i;
     }
+    debugf("Signal unblocking\n");
     panic_on(sigprocmask(1, &set, NULL));
+    
     debugf("global = %d.\n", global);
     return 0;
 }

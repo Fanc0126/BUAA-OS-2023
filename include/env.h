@@ -56,6 +56,8 @@ struct Env {
 	// challenge 4
 	struct sigaction action[64];
 	sigset_t blocked;
+	sigset_t oldBlock[128];
+	u_int block_num;
 	//pending
 	u_int sig_list[128];
 	u_int num;

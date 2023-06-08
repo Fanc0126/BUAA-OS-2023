@@ -1,0 +1,78 @@
+kern/env.c:		if(e->env_id!=curenv->env_id&&e->env_parent_id!=curenv->env_id){
+kern/env.c:	printk("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
+kern/env.c:	if(curenv->action[signum-1].sa_handler){
+kern/env.c:		tmp_tf=curenv->env_tf;
+kern/env.c:		if (curenv->env_tf.regs[29] < USTACKTOP || curenv->env_tf.regs[29] >= UXSTACKTOP) {
+kern/env.c:			curenv->env_tf.regs[29] = UXSTACKTOP;
+kern/env.c:		curenv->env_tf.regs[29]-=sizeof(struct Trapframe);
+kern/env.c:		*(struct Trapframe *)curenv->env_tf.regs[29] = tmp_tf;
+kern/env.c:		unsigned long dest=curenv->env_tf.regs[29];
+kern/env.c:		curenv->env_tf.regs[29]-=4;
+kern/env.c:		*(unsigned long *)curenv->env_tf.regs[29]=0xc;
+kern/env.c:		curenv->env_tf.regs[29]-=4;
+kern/env.c:		*(unsigned long *)curenv->env_tf.regs[29]=0x34250000|(dest&0xffff);
+kern/env.c:		curenv->env_tf.regs[29]-=4;
+kern/env.c:		*(unsigned long *)curenv->env_tf.regs[29]=0x3c010000|(dest>>16);
+kern/env.c:		curenv->env_tf.regs[29]-=4;
+kern/env.c:		*(unsigned long *)curenv->env_tf.regs[29]=0x24040000;
+kern/env.c:		curenv->env_tf.regs[31]= curenv->env_tf.regs[29];
+kern/env.c:		curenv->env_tf.regs[4]=signum;
+kern/env.c:		curenv->env_tf.regs[29]-=sizeof(curenv->env_tf.regs[4]);
+kern/env.c:	//	curenv->env_tf.regs[2]=SYS_sigreturn;
+kern/env.c:		curenv->env_tf.cp0_epc=curenv->action[signum-1].sa_handler;
+kern/env.c:		env_pop_tf(&(curenv->env_tf),curenv->env_asid);
+kern/env.c:	if(curenv->num==0)
+kern/env.c:	for(i=0;i<curenv->num;i++){
+kern/env.c:		signum=curenv->sig_list[i];
+kern/env.c:			flag=curenv->blocked.sig[1]&(1<<(signum%32-1));	
+kern/env.c:			flag=curenv->blocked.sig[0]&(1<<(signum-1));
+kern/env.c:			printk("%d\n",curenv->num);
+kern/env.c://		printk("signum:%d  flag:%d block: %d\n",signum,flag,curenv->blocked.sig[0]);
+kern/env.c:		//	TAILQ_REMOVE(&(curenv->sig_list),info,info_link);
+kern/env.c:		for(j=i+1;j<curenv->num;j++){
+kern/env.c:			curenv->sig_list[i]=curenv->sig_list[j];
+kern/env.c:		curenv->num--;
+kern/env.c:		memcpy(&(curenv->oldBlock[curenv->block_num]),&(curenv->blocked),sizeof(sigset_t));
+kern/env.c:		curenv->block_num++;
+kern/env.c:		memcpy(&(curenv->blocked),&(curenv->action[signum-1].sa_mask),sizeof(sigset_t));
+kern/env.c:	 *   'curenv->env_tf' first.
+kern/env.c:		curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
+kern/env.c:	curenv->env_runs++; // lab6
+kern/env.c:	/* Step 3: Change 'cur_pgdir' to 'curenv->env_pgdir', switching to its address space. */
+kern/env.c:	cur_pgdir=curenv->env_pgdir;
+kern/env.c:	 *  - You should use 'curenv->env_asid' here.
+kern/env.c:	//if(!TAILQ_EMPTY(&(curenv->sig_list)))
+kern/env.c:	env_pop_tf(&(curenv->env_tf),curenv->env_asid);
+kern/panic.c:		printk("curenv:    %x (id = 0x%x, off = %d)\n", curenv, curenv->env_id,
+kern/syscall_all.c:		*oldact=curenv->action[signum-1];
+kern/syscall_all.c:	memcpy(curenv->action+(signum-1),act,sizeof(*act));
+kern/syscall_all.c:	//curenv->action[signum-1]=*act;
+kern/syscall_all.c:		*oldset=curenv->blocked;
+kern/syscall_all.c:		sig0=curenv->blocked.sig[0]|set->sig[0];
+kern/syscall_all.c:		sig1=curenv->blocked.sig[1]|set->sig[1];
+kern/syscall_all.c:		sig0=curenv->blocked.sig[0]&(~(set->sig[0]));
+kern/syscall_all.c:		sig1=curenv->blocked.sig[1]&(~(set->sig[1]));
+kern/syscall_all.c:	curenv->blocked.sig[0]=sig0;
+kern/syscall_all.c:	curenv->blocked.sig[1]=sig1;
+kern/syscall_all.c://	info.sender=curenv->env_id;
+kern/syscall_all.c:	return curenv->env_id;
+kern/syscall_all.c:	printk("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
+kern/syscall_all.c:	try(env_alloc(&e,curenv->env_id));	
+kern/syscall_all.c:	e->env_pri=curenv->env_pri;
+kern/syscall_all.c:	memcpy(&(e->action),&(curenv->action),sizeof(curenv->action));
+kern/syscall_all.c:	memcpy(&(e->blocked),&(curenv->blocked),sizeof(curenv->blocked));
+kern/syscall_all.c:	sys_set_trapframe(curenv->env_id,tf);
+kern/syscall_all.c:	curenv->block_num--;
+kern/syscall_all.c:	memcpy(&(curenv->blocked),&(curenv->oldBlock[curenv->block_num]),sizeof(sigset_t));
+kern/syscall_all.c:	/* Step 2: Set 'curenv->env_ipc_recving' to 1. */
+kern/syscall_all.c:	curenv->env_ipc_recving=1;
+kern/syscall_all.c:	/* Step 3: Set the value of 'curenv->env_ipc_dstva'. */
+kern/syscall_all.c:	curenv->env_ipc_dstva=dstva;
+kern/syscall_all.c:	curenv->env_status=ENV_NOT_RUNNABLE;
+kern/syscall_all.c:	e->env_ipc_from = curenv->env_id;
+kern/syscall_all.c:		p=page_lookup(curenv->env_pgdir,srcva,NULL);
+kern/tlbex.c:		curenv->sig_list[curenv->num]=11;
+kern/tlbex.c:		curenv->num++;
+kern/tlbex.c:	if (curenv->env_user_tlb_mod_entry) {
+kern/tlbex.c:		// Hint: Set 'cp0_epc' in the context 'tf' to 'curenv->env_user_tlb_mod_entry'.
+kern/tlbex.c:		tf->cp0_epc=curenv->env_user_tlb_mod_entry;

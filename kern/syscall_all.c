@@ -37,7 +37,12 @@ int sys_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
 	}
 	curenv->blocked.sig[0]=sig0;
 	curenv->blocked.sig[1]=sig1;
+//	printk("sigprocmask\n");
+//	sys_set_trapframe(curenv->env_id,&(curenv->env_tf));
+//	struct Trapframe *tf=((struct Trapframe *)KSTACKTOP - 1);
+//	tf->cp0_epc+=8;
 	do_signal();
+//	tf->cp0_epc-=8;
 	return 0;
 }
 
@@ -55,6 +60,7 @@ int sys_kill(u_int envid, int sig){
 //	TAILQ_INSERT_TAIL(&(env->sig_list),&info,info_link);
 	env->sig_list[env->num]=sig;
 	env->num++;
+
 	do_signal();
 	return 0;
 }
@@ -370,7 +376,12 @@ int sys_set_trapframe(u_int envid, struct Trapframe *tf) {
 }
 void sys_do_signal(struct Trapframe *tf){
 	sys_set_trapframe(curenv->env_id,tf);
+//	curenv->env_tf.cp0_epc+=4;
+//	printk("the num : %d\n",curenv->num);
+	curenv->block_num--;
+	memcpy(&(curenv->blocked),&(curenv->oldBlock[curenv->block_num]),sizeof(sigset_t));
 	do_signal();
+//	printk("now:%x\n",curenv->env_tf.cp0_epc);
 }
 /* Overview:
  * 	Kernel panic with message `msg`.
