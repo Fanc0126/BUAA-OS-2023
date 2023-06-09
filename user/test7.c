@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
         ans += i;
     }
     panic_on(sigprocmask(1, &set, NULL));
-    debugf("global = %d.\n", global);
+    debugf("the final global = %d.\n", global);
     return 0;
 }
 
