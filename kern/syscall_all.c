@@ -14,6 +14,7 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
 		*oldact=curenv->action[signum-1];
 	memcpy(curenv->action+(signum-1),act,sizeof(*act));
 	//curenv->action[signum-1]=*act;
+	curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 	do_signal();
 	return 0;
 }
@@ -41,6 +42,7 @@ int sys_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
 //	sys_set_trapframe(curenv->env_id,&(curenv->env_tf));
 //	struct Trapframe *tf=((struct Trapframe *)KSTACKTOP - 1);
 //	tf->cp0_epc+=8;
+	curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 	do_signal();
 //	tf->cp0_epc-=8;
 	return 0;
@@ -60,7 +62,7 @@ int sys_kill(u_int envid, int sig){
 //	TAILQ_INSERT_TAIL(&(env->sig_list),&info,info_link);
 	env->sig_list[env->num]=sig;
 	env->num++;
-
+	curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 	do_signal();
 	return 0;
 }
@@ -380,7 +382,9 @@ void sys_do_signal(struct Trapframe *tf){
 //	printk("the num : %d\n",curenv->num);
 	curenv->block_num--;
 	memcpy(&(curenv->blocked),&(curenv->oldBlock[curenv->block_num]),sizeof(sigset_t));
+	curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 	do_signal();
+//	printk("new: %x;return: %x\n",((struct Trapframe *)KSTACKTOP - 1)->cp0_epc,((struct Trapframe *)KSTACKTOP - 1)->regs[31]);
 }
 /* Overview:
  * 	Kernel panic with message `msg`.

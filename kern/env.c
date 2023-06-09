@@ -467,8 +467,9 @@ void handle_signal(int signum){
 //		if(signum==11){
 //			((struct Trapframe *)KSTACKTOP - 1)->cp0_epc+=4;
 //		}
-		tmp_tf=*((struct Trapframe *)KSTACKTOP - 1);
-//		printk("old:%x\n",tmp_tf.cp0_epc);
+		tmp_tf=curenv->env_tf;
+//		tmp_tf=*((struct Trapframe *)KSTACKTOP - 1);
+//		printk("the num:%d  old:%x\n",signum,tmp_tf.cp0_epc);
 		//memset(&tmp_tf,&(e->env_tf),sizeof(struct Trapframe));
 		if (curenv->env_tf.regs[29] < USTACKTOP || curenv->env_tf.regs[29] >= UXSTACKTOP) {
 			curenv->env_tf.regs[29] = UXSTACKTOP;

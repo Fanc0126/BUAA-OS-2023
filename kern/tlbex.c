@@ -7,8 +7,11 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 	if (va < UTEMP) {
 		curenv->sig_list[curenv->num]=11;
 		curenv->num++;
+//		((struct Trapframe *)KSTACKTOP - 1)->cp0_epc+=4;
+		curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 		do_signal();
 		//panic("address too low");
+//		env_pop_tf(&(curenv->env_tf),curenv->env_asid);
 	}
 
 	if (va >= USTACKTOP && va < USTACKTOP + BY2PG) {
