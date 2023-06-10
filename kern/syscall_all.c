@@ -13,6 +13,7 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
 	if(oldact != NULL)
 		*oldact=curenv->action[signum-1];
 	memcpy(curenv->action+(signum-1),act,sizeof(*act));
+//	printk("%d %d ;%d %d\n",curenv->action[signum-1].sa_mask.sig[0],curenv->action[signum-1].sa_mask.sig[1],act->sa_mask.sig[0],act->sa_mask.sig[1]);
 	//curenv->action[signum-1]=*act;
 	curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 	do_signal();

@@ -532,8 +532,9 @@ void do_signal(){
 	//	printk("%d\n",curenv->num);
 		memcpy(&(curenv->oldBlock[curenv->block_num]),&(curenv->blocked),sizeof(sigset_t));
 		curenv->block_num++;
+//		printk("%d %d ;%d %d \n",curenv->blocked.sig[0],curenv->blocked.sig[1],curenv->action[signum-1].sa_mask.sig[0],curenv->action[signum-1].sa_mask.sig[1]);
 		memcpy(&(curenv->blocked),&(curenv->action[signum-1].sa_mask),sizeof(sigset_t));
-			handle_signal(signum);			
+		handle_signal(signum);			
 			return ;
 		}
 	}
