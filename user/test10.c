@@ -16,6 +16,7 @@ void handler_2(int num) {
     sigprocmask(0, &set, &oldset);
  debugf("the handler_2 has blocked(before reentry) 2:%d ; 3:%d ; 4:%d ; 5:%d\n",sigismember(&oldset, 2),sigismember(&oldset, 3),sigismember(&oldset, 4),sigismember(&oldset, 5));
     sigaddset(&set, 4);
+    sigaddset(&set, 3);
     kill(0, 4);
     panic_on(sigprocmask(1, &set, NULL));
     //kill(0, 4);

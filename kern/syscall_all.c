@@ -11,8 +11,9 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
 	if(signum<1||signum>64)
 		return -1;
 	if(oldact != NULL)
-		*oldact=curenv->action[signum-1];
-	memcpy(curenv->action+(signum-1),act,sizeof(*act));
+		memcpy(oldact,curenv->action+(signum-1),sizeof(struct sigaction));
+		//*oldact=curenv->action[signum-1];
+	memcpy(curenv->action+(signum-1),act,sizeof(struct sigaction));
 //	printk("%d %d ;%d %d\n",curenv->action[signum-1].sa_mask.sig[0],curenv->action[signum-1].sa_mask.sig[1],act->sa_mask.sig[0],act->sa_mask.sig[1]);
 	//curenv->action[signum-1]=*act;
 	((struct Trapframe *)KSTACKTOP - 1)->regs[2]=0;
@@ -23,7 +24,8 @@ int sys_sigaction(int signum, const struct sigaction *act, struct sigaction *old
 
 int sys_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
 	if(oldset!=NULL)
-		*oldset=curenv->blocked;
+		memcpy(oldset,&(curenv->blocked),sizeof(sigset_t));
+		//*oldset=curenv->blocked;
 	int sig0=0;
 	int sig1=0;
 	if(how==0){
@@ -40,7 +42,7 @@ int sys_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
 	}
 	curenv->blocked.sig[0]=sig0;
 	curenv->blocked.sig[1]=sig1;
-//	printk("sigprocmask\n");
+//	printk("blocked:%d  %d\n",curenv->blocked.sig[0],curenv->blocked.sig[1]);
 //	sys_set_trapframe(curenv->env_id,&(curenv->env_tf));
 //	struct Trapframe *tf=((struct Trapframe *)KSTACKTOP - 1);
 //	tf->cp0_epc+=8;
@@ -313,8 +315,12 @@ int sys_exofork(void) {
 	/* Exercise 4.9: Your code here. (4/4) */
 	e->env_status=ENV_NOT_RUNNABLE;
 	e->env_pri=curenv->env_pri;
+	e->num=curenv->num;
+	e->block_num=curenv->block_num;
+	memcpy(&(e->sig_list),&(curenv->sig_list),sizeof(curenv->sig_list));
 	memcpy(&(e->action),&(curenv->action),sizeof(curenv->action));
 	memcpy(&(e->blocked),&(curenv->blocked),sizeof(curenv->blocked));
+	memcpy(&(e->oldBlock),&(curenv->oldBlock),sizeof(curenv->oldBlock));
 	return e->env_id;
 }
 

@@ -522,6 +522,7 @@ void do_signal(){
 //		printk("signum:%d  flag:%d block: %d\n",signum,flag,curenv->blocked.sig[0]);
 		if(flag==0){
 		//	TAILQ_REMOVE(&(curenv->sig_list),info,info_link);
+		if(curenv->action[signum-1].sa_handler||signum==9||signum==11||signum==15){
 		int j;
 		for(j=i+1;j<curenv->num;j++){
 			curenv->sig_list[i]=curenv->sig_list[j];
@@ -536,6 +537,7 @@ void do_signal(){
 		memcpy(&(curenv->blocked),&(curenv->action[signum-1].sa_mask),sizeof(sigset_t));
 		handle_signal(signum);			
 			return ;
+		}
 		}
 	}
 }

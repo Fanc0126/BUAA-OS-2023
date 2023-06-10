@@ -38,7 +38,7 @@ void mips_init() {
 	// ENV_CREATE(user_fstest);
 	// ENV_CREATE(fs_serv);  // This must be the second env!
 	// ENV_CREATE(user_devtst);
-	ENV_CREATE(user_test10);
+	ENV_CREATE(user_test8);
 	// lab3:
 	 kclock_init();
 	 enable_irq();
