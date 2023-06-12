@@ -15,10 +15,10 @@ void sgv_handler(int num) {
 void handler(int num) {
     debugf("Reach handler, now the signum is %d!\n", num);
     debugf("global = %d.\n", global);
-    sigset_t set;
-    sigaddset(&set, 3);
+//    sigset_t set;
+//    sigaddset(&set, 3);
     kill(0, 3);
-    panic_on(sigprocmask(1, &set, NULL));
+//    panic_on(sigprocmask(1, &set, NULL));
     debugf("global = %d.\n", global);
     *test = 10;
     global = 1;
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     sig.sa_handler = handler_2;
     panic_on(sigaction(3, &sig, NULL));
     sigaddset(&set, TEST_NUM);
-    sigaddset(&set, 3);
+//    sigaddset(&set, 3);
     panic_on(sigprocmask(0, &set, NULL));
     kill(0, TEST_NUM);
     sig.sa_handler = sgv_handler;
