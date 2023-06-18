@@ -1,6 +1,6 @@
 lab-ge = $(shell [ "$$(echo $(lab)_ | cut -f1 -d_)" -ge $(1) ] && echo true)
 
-INITAPPS             :=# test3.x test6.x test7.x test8.x test10.x test11.x test13.x test14.x
+INITAPPS             := test3.x test6.x test7.x test8.x test10.x test11.x test13.x test14.x
 
 USERLIB              := entry.o \
 			syscall_wrap.o \

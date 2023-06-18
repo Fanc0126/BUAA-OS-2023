@@ -38,9 +38,13 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 	return env->env_ipc_value;
 }
 int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact){
+	if(oldact!=NULL)
+	memset(oldact,0,sizeof(struct sigaction));
 	return syscall_sigaction(signum,act,oldact);
 }
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
+	if(oldset!=NULL)
+	memset(oldset,0,sizeof(sigset_t));
 	return syscall_sigprocmask(how,set,oldset);
 }
 void sigemptyset(sigset_t *set){
